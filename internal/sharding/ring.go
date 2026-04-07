@@ -55,7 +55,9 @@ func (r *Ring) ShardFor(key string) string {
 
 func hashString(value string) uint32 {
 	hasher := fnv.New32a()
-	_, _ = hasher.Write([]byte(value))
+	if _, err := hasher.Write([]byte(value)); err != nil {
+		return 0
+	}
 	return hasher.Sum32()
 }
 

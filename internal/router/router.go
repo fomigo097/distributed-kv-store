@@ -100,11 +100,17 @@ func (r *Router) handleKV(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, fmt.Sprintf("forward request: %v", err), http.StatusBadGateway)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			return
+		}
+	}()
 
 	w.Header().Set("X-Shard-ID", shard)
 	w.WriteHeader(resp.StatusCode)
-	_, _ = io.Copy(w, resp.Body)
+	if _, err := io.Copy(w, resp.Body); err != nil {
+		return
+	}
 }
 
 func (r *Router) handleShards(w http.ResponseWriter, req *http.Request) {
@@ -136,5 +142,7 @@ func (r *Router) handleHealth(w http.ResponseWriter, req *http.Request) {
 func writeJSON(w http.ResponseWriter, status int, payload any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(payload)
+	if err := json.NewEncoder(w).Encode(payload); err != nil {
+		return
+	}
 }

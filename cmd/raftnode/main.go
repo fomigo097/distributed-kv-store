@@ -30,7 +30,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("open store: %v", err)
 	}
-	defer store.Close()
+	defer func() {
+		if err := store.Close(); err != nil {
+			log.Printf("close store: %v", err)
+		}
+	}()
 
 	node := raftnode.New(nodeID, parsePeers(os.Getenv("PEERS")), store)
 

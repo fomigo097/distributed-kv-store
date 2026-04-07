@@ -264,7 +264,9 @@ func (n *Node) replicateCommand(ctx context.Context, operation, key, value strin
 
 	for _, baseURL := range peers {
 		var resp raft.AppendEntriesResponse
-		_ = n.postJSON(ctx, baseURL+"/raft/append-entries", heartbeat, &resp)
+		if err := n.postJSON(ctx, baseURL+"/raft/append-entries", heartbeat, &resp); err != nil {
+			continue
+		}
 	}
 
 	return nil
@@ -444,7 +446,11 @@ func (n *Node) postJSON(ctx context.Context, url string, reqBody any, out any) e
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			return
+		}
+	}()
 
 	if resp.StatusCode >= http.StatusBadRequest {
 		return fmt.Errorf("unexpected status %d", resp.StatusCode)
@@ -456,9 +462,13 @@ func (n *Node) postJSON(ctx context.Context, url string, reqBody any, out any) e
 func writeJSON(w http.ResponseWriter, status int, payload any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(payload)
+	if err := json.NewEncoder(w).Encode(payload); err != nil {
+		return
+	}
 }
 
 func writeMetricLine(w io.Writer, name string, value uint64) {
-	_, _ = io.WriteString(w, name+" "+strconv.FormatUint(value, 10)+"\n")
+	if _, err := io.WriteString(w, name+" "+strconv.FormatUint(value, 10)+"\n"); err != nil {
+		return
+	}
 }

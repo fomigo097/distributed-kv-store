@@ -69,9 +69,15 @@ func TestServerRoundTripAndRecovery(t *testing.T) {
 		t.Fatalf("expected get success with cat, got status=%d payload=%q", status, payload)
 	}
 
-	_ = conn.Close()
-	_ = listener.Close()
-	_ = store.Close()
+	if err := conn.Close(); err != nil {
+		t.Fatalf("close conn: %v", err)
+	}
+	if err := listener.Close(); err != nil {
+		t.Fatalf("close listener: %v", err)
+	}
+	if err := store.Close(); err != nil {
+		t.Fatalf("close store: %v", err)
+	}
 
 	serveErr := <-done
 	if serveErr == nil {

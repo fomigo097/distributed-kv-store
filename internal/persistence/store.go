@@ -21,7 +21,9 @@ func OpenStore(path string) (*Store, error) {
 	}
 
 	if err := wal.Replay(s.applyRecord); err != nil {
-		_ = wal.Close()
+		if closeErr := wal.Close(); closeErr != nil {
+			return nil, closeErr
+		}
 		return nil, err
 	}
 

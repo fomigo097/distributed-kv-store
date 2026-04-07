@@ -25,14 +25,22 @@ func main() {
 	if err != nil {
 		log.Fatalf("open persistent store: %v", err)
 	}
-	defer store.Close()
+	defer func() {
+		if err := store.Close(); err != nil {
+			log.Printf("close store: %v", err)
+		}
+	}()
 
 	addr := ":" + port
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("listen on %s: %v", addr, err)
 	}
-	defer listener.Close()
+	defer func() {
+		if err := listener.Close(); err != nil {
+			log.Printf("close listener: %v", err)
+		}
+	}()
 
 	log.Printf("starting persistent TCP server on %s with WAL at %s", addr, walPath)
 
