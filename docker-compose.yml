@@ -1,0 +1,55 @@
+services:
+  shard-a:
+    build:
+      context: .
+      args:
+        TARGET: ./cmd/raftnode
+    container_name: shard-a
+    environment:
+      NODE_ID: shard-a
+      HTTP_PORT: "7001"
+      WAL_PATH: /data/shard-a.wal
+      PEERS: ""
+    ports:
+      - "7001:7001"
+    volumes:
+      - shard_a_data:/data
+    command: []
+
+  shard-b:
+    build:
+      context: .
+      args:
+        TARGET: ./cmd/raftnode
+    container_name: shard-b
+    environment:
+      NODE_ID: shard-b
+      HTTP_PORT: "7011"
+      WAL_PATH: /data/shard-b.wal
+      PEERS: ""
+    ports:
+      - "7011:7011"
+    volumes:
+      - shard_b_data:/data
+    command: []
+
+  router:
+    build:
+      context: .
+      args:
+        TARGET: ./cmd/router
+    container_name: kv-router
+    environment:
+      ROUTER_PORT: "7100"
+      SHARD_LEADERS: shard-a=http://shard-a:7001,shard-b=http://shard-b:7011
+    ports:
+      - "7100:7100"
+    depends_on:
+      - shard-a
+      - shard-b
+    command: []
+
+volumes:
+  shard_a_data:
+  shard_b_data:
+
