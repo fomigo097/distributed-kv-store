@@ -11,10 +11,10 @@ The current implementation now includes:
 - Restart recovery by replaying the WAL
 - Pure Raft state machine for elections, voting, and log replication rules
 - Multi-node HTTP transport for Raft vote and append RPCs
-- Three-node integration test covering election and replicated writes
+- Integration tests covering three-node leader election and replicated writes
 - Consistent-hash shard ring and a router that forwards keys to shard leaders
 - Status and Prometheus-style metrics endpoints on Raft nodes
-- Docker packaging and Compose-based local demo topology
+- Docker packaging and a Compose-based local demo with two shard leaders and one router
 - GitHub Actions CI and lint configuration
 - Architecture notes for interview-ready explanation
 - Concurrency-safe storage layer
